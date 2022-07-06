@@ -34,3 +34,11 @@ Para executar o projeto adequadamente, entre na raiz do projeto e execute:
 - `python3 client.py` em outra(s) janela(s) do terminal. É possível rodar mais de um cliente simultaneamente.
 
 ### Funcionalidades
+
+**Operações:** 
+
+0. Saldo
+1. Saque
+2. Depósito 
+3. Transferência 
+4. Logout
