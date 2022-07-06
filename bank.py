@@ -2,10 +2,10 @@
 class Banco:
     @staticmethod
     def openFile(): # METHOD TO OPEN FILE 
-        f = open("banco.txt", 'a')
+        f = open("db.txt", 'a')
         f.close()
 
-        return open("banco.txt", 'r+')
+        return open("db.txt", 'r+')
 
     @staticmethod
     def checkClient(rgClient): # CHECKS IF A CLIENT EXIST

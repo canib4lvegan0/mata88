@@ -5,7 +5,7 @@ from _thread import *
 import threading
 from threading import Thread 
 from socketserver import ThreadingMixIn 
-from Banco import Banco
+from bank import Banco
 
 # ----- START INITIAL SETTINGS -----
 HOST = '0.0.0.0'
