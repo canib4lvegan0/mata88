@@ -1,10 +1,8 @@
 import socket
-import struct
-import time
-from _thread import *
 import threading
-from threading import Thread 
-from socketserver import ThreadingMixIn 
+import time
+from threading import Thread
+
 from database import DB
 
 TAB = ' -' * 5 + ' '
