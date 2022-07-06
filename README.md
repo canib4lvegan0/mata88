@@ -22,10 +22,10 @@ servidor mantém seus respectivos relógios lógicos atualizados, iniciando com 
 ___
 
 ### Estrutura do diretório
-- *bank.py*: representação do Banco.
+- *database.py*: representação do DB de Dados do Sistema Bancário.
 - *client.py*: representação do Cliente.
 - *server.py*: representação do Servidor.
-- *db.txt*: Banco de dados de clientes e seus respectivos saldos.
+- *db.txt*: DB de dados de clientes e seus respectivos saldos.
 
 
 ### Executando

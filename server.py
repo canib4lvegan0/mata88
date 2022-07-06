@@ -5,7 +5,7 @@ from _thread import *
 import threading
 from threading import Thread 
 from socketserver import ThreadingMixIn 
-from bank import Banco
+from database import DB
 
 # ----- START INITIAL SETTINGS -----
 HOST = '0.0.0.0'
@@ -83,14 +83,14 @@ class ClientThread(Thread): # ----- THREAD FOR A NEW CLIENT -----
                 data = self.connection.recv(BUFFER_SIZE).decode("utf-8").split(' ') # GET DATA SENDED BY CLIENT
 
                 if data[0] == '1': # LOGIN OPTION
-                    res = Banco.login(data[1], data[2]) # QUERY BY A USER IN DATABASE
+                    res = DB.login(data[1], data[2]) # QUERY BY A USER IN DATABASE
 
                     self.connection.send(bytes([res])) # SEND RESPONSE OF DATABASE TO CLIENT
                     if res == 0:
                         break # IF FIND A USER, LEAVE LOOP
 
                 elif data[0] == '2': # REGISTER OPTION
-                    res = Banco.register(data[1], data[2], data[3]) # REGISTER A USER IN DATABASE
+                    res = DB.register(data[1], data[2], data[3]) # REGISTER A USER IN DATABASE
 
                     self.connection.send(bytes([res])) # SEND RESPONSE OF DATABASE TO CLIENT
 
@@ -121,28 +121,28 @@ class ClientThread(Thread): # ----- THREAD FOR A NEW CLIENT -----
 
                 if data[0] == '0': # OPERATION QUERY CASH
                     self.lock_threads([data[1]])
-                    res = Banco.queryCash(data[1]) # QUERY CASH MONEY
+                    res = DB.queryCash(data[1]) # QUERY CASH MONEY
                     self.release_threads([data[1]])
 
                     self.connection.send(bytes(" ".join(["QUERY", str(res), str(LOGIC_CLOCK)]), "utf-8")) # SEND RESPONSE OF DATABASE TO CLIENT
 
                 elif data[0] == '1': # OPERATION WITHDRAW
                     self.lock_threads([data[1]])
-                    res = Banco.withdraw(data[1], int(data[2])) # WITHDRAWING MONEY
+                    res = DB.withdraw(data[1], int(data[2])) # WITHDRAWING MONEY
                     self.release_threads([data[1]])
 
                     self.connection.send(bytes(" ".join(["WITHDRAWING", str(res), str(LOGIC_CLOCK)]), "utf-8")) # SEND RESPONSE OF DATABASE TO CLIENT
 
                 elif data[0] == '2': # OPERATION DEPOSIT
                     self.lock_threads([data[1]])
-                    res = Banco.deposit(data[1], int(data[2])) # DEPOSITING MONEY
+                    res = DB.deposit(data[1], int(data[2])) # DEPOSITING MONEY
                     self.release_threads([data[1]])
 
                     self.connection.send(bytes(" ".join(["DEPOSITING", str(res), str(LOGIC_CLOCK)]), "utf-8")) # SEND RESPONSE OF DATABASE TO CLIENT
 
                 elif data[0] == '3': # OPERATION TRANSFER
                     self.lock_threads([data[1], data[3]])
-                    res = Banco.transfer(data[1], int(data[2]), data[3])# TRANSFERING MONEY TO ANOTHER CLIENT
+                    res = DB.transfer(data[1], int(data[2]), data[3])# TRANSFERING MONEY TO ANOTHER CLIENT
                     self.release_threads([data[1], data[3]])
 
                     self.connection.send(bytes(" ".join(["TRANSFER", str(res), str(LOGIC_CLOCK)]), "utf-8")) # SEND RESPONSE OF DATABASE TO CLIENT

@@ -4,7 +4,7 @@ import threading
 from threading import Thread
 
 TAB = ' -' * 5 + ' '
-STATE_TAB = ' ~ ' * 5 + ' '
+STATE_TAB = ' .. ' * 5 + ' '
 
 # Configurando sockets
 HOST = socket.gethostname()
