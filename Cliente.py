@@ -3,6 +3,9 @@ import time
 import threading
 from threading import Thread
 
+TAB = ' -' * 5 + ' '
+STATE_TAB = ' ~ ' * 5 + ' '
+
 # Configurando sockets
 HOST = socket.gethostname()
 PORT = 5002
@@ -11,8 +14,15 @@ BUFFER_SIZE = 2048
 # Relógio lógico do cliente
 LOGIC_CLOCK = 0
 
+class SocketError(BaseException):
+    def __str__(self):
+        return 'SocketError: algum error acorreu na conexão com servidor'
 
-# Classe que representa... todo
+
+SOCKET_ERROR = SocketError
+
+''' Classe que representa uma Thread do cliente.
+Mantem a Thread em atividade, atualiza estado, enviar e recebe requisição do servidor. '''
 class RecvThread(Thread):
 
     def __init__(self):
@@ -22,35 +32,35 @@ class RecvThread(Thread):
         self.messages = []
         self.last_message = 'WAITING COMMAND'
 
-    # todo
+    ''' Mantém a thread em atividade enquanto o cliente estiver ativo '''
     def run(self):
         global LOGIC_CLOCK
 
+        # Aguardando comunicação do servidor
         while True:
             try:
                 resp = socketClient.recv(BUFFER_SIZE).decode("utf-8").split(' ')
 
-                # Capturando valor do relógio lógico do Servidor e atualizando relógio local
+                # Captura valor do relógio lógico do Servidor e atualizando o local
                 if resp:
                     LOGIC_CLOCK = resp.pop()
-                    print(f'Estado do relógio lógico: {LOGIC_CLOCK}')
+                    print(f'\n{STATE_TAB}Estado do relógio lógico: {LOGIC_CLOCK}{STATE_TAB}\n')
 
-                if resp[0] != "save":
+                if resp[0] != "save":           # Finaliza a comunicação/operação corrente
                     self.last_message = data
                     self.waiting_response = False
-
-                if resp[0] == 'QUERY':
+                if resp[0] == 'QUERY':          # Finaliza operação de saldo
                     queryResponse(resp)
-                elif resp[0] == 'WITHDRAWING':
+                elif resp[0] == 'WITHDRAWING':  # Finaliza operação de saque
                     withdrawResponse(resp)
-                elif resp[0] == 'DEPOSITING':
+                elif resp[0] == 'DEPOSITING':   # Finaliza operação de depósito
                     depositResponse(resp)
-                elif resp[0] == 'TRANSFER':
+                elif resp[0] == 'TRANSFER':     # Finaliza operação de transferência
                     transferResponse(resp)
-                elif resp[0] == 'LOGOUT':
+                elif resp[0] == 'LOGOUT':       # Finaliza operação de logout, liberando o socket
                     socketClient.setblocking(True)
                     break
-                elif resp[0] == "save":
+                elif resp[0] == "save":         # Mantém a comunicação/operação corrente
                     self.recvMark()
 
                 self.sendMark()
@@ -58,23 +68,24 @@ class RecvThread(Thread):
             except:
                 pass
 
-    # todo
+    ''' Atualiza estado da Thread '''
     def resetState(self):
         time.sleep(10)
         self.saved_state = False
 
-    # todo
+    ''' Enviar requisição ao servidor o estado do cliente '''
     def sendMark(self):
         if not self.saved_state:
             self.messages = []
             socketClient.send(bytes('save', 'utf-8'))
-            print(f'\nEstado do Cliente: {self.last_message}\n')
+
+            print(f'\n{STATE_TAB}Estado do Cliente: {self.last_message}{STATE_TAB}\n')
 
             self.saved_state = True
             reset = threading.Thread(target=self.resetState)
             reset.start()
 
-    # todo
+    ''' Recebe do servidor estado do cliente '''
     def recvMark(self):
         if not self.saved_state:
             self.sendMark()
@@ -82,94 +93,94 @@ class RecvThread(Thread):
         #     print(f'\nMensagens no Canal: {self.messages}')
 
 
-# Exibe mensagem apropriada sobre cadastro de usuário
+''' Manipula o cadastro de um usuário '''
 def handleRegister(code):
     if code == 0:
-        print('\nUsuário cadastrado com sucesso!\n')
+        print(f'\n{TAB}Usuário cadastrado com sucesso!{TAB}\n')
         return True
     elif code == 1:
-        print('\nJá existe um usuário com este RG.\n')
+        print(f'\n{TAB}Já existe um usuário com este RG.{TAB}\n')
 
     return False
 
 
-# Exibe mensagem apropriada sobre login
+''' Manipula login de um usuário '''
 def handleAuth(code):
     if code == 0:
-        print('\nLogin realizado com sucesso!\n')
+        print(f'\n{TAB}Login realizado com sucesso!{TAB}\n')
         return True
     elif code == 1:
-        print('\nSenha incorreta.\n')
+        print(f'\n{TAB}Senha incorreta.{TAB}\n')
     elif code == 2:
-        print('\nUsuário inexistente.\n')
+        print(f'\n{TAB}Usuário inexistente.{TAB}\n')
 
     return False
 
 
-# Exibe menu inicial
+''' Exibe menu da Home do sistema bancário '''
 def showMenu():
     print('\nOpções: \n1 - Login\n2 - Cadastrar\n3 - Sair\n')
 
 
-# Exibe operações disponiveis ao cliente
+''' Exibe operações disponíveis ao cliente '''
 def showOperations():
-    print('***' * 10)
+    print('*-*-*' * 10)
     print('Operações: \n0 - Saldo\n1 - Saque\n2 - Depósito\n3 - Transferência\n4 - Logout\n')
 
 
-# Exibe saldo do cliente
-def queryResponse(data):
-    print(f'\t\tSaldo atual: R${int(data[1])}')
+''' Exibe resultado da operação saldo '''
+def queryResponse(_data):
+    print(f'\n{TAB}Saldo atual: R${int(_data[1])}{TAB}\n')
 
 
-# Exibe mensagem apropriada sobre operação de saque
-def withdrawResponse(data):
-    if (code := int(data[1])) == 0:
-        print('\nSaque efetuado com sucesso.\n')
+''' Exibe mensagem sobre operação de saque '''
+def withdrawResponse(_data):
+    if (code := int(_data[1])) == 0:
+        print(f'\n{TAB}Saque efetuado com sucesso.{TAB}\n')
     elif code == 1:
-        print('\nSaldo insuficiente.\n')
+        print(f'\n{TAB}Saldo insuficiente.{TAB}\n')
     else:
-        print('\nErro ao sacar.\n')
+        print(f'\n{TAB}Erro ao sacar.{TAB}\n')
 
 
-# Exibe mensagem apropriada sobre operação de depósito
-def depositResponse(data):
-    if int(data[1]) == 0:
-        print('\nDepósito efetuado com sucesso!\n')
+''' Exibe mensagem sobre operação de depósito '''
+def depositResponse(_data):
+    if int(_data[1]) == 0:
+        print(f'\n{TAB}Depósito efetuado com sucesso!\n')
     else:
-        print('\nErro ao depositar.\n')
+        print(f'\n{TAB}Erro ao depositar.\n')
 
 
-# Exibe mensagem apropriada sobre operação de transferência
-def transferResponse(data):
-    if (code := int(data[1])) == 0:
-        print('\nTransferência realizada com sucesso.\n')
+''' Exibe mensagem sobre operação de transferência '''
+def transferResponse(_data):
+    if (code := int(_data[1])) == 0:
+        print(f'\n{TAB}Transferência realizada com sucesso.{TAB}\n')
     elif code == 1:
-        print('\nSaldo insuficiente.\n')
+        print(f'\n{TAB}Saldo insuficiente.{TAB}\n')
     else:
-        print('\nCorrentista não encontrado.\n')
+        print(f'\n{TAB}Correntista não encontrado.{TAB}\n')
 
 
-# Opera o registro de um novo usuário
+''' Formulário o registro de usuário '''
 def register():
     while True:
-        name = input("Digite seu nome: ")
-        rg = input("Digite seu RG: ")
-        password = input("Digite uma senha: ")
+        print(TAB)
+        name = input('Digite seu nome: ')
+        rg = input('Digite seu RG: ')
+        password = input('Digite uma senha: ')
 
         # Enviando dados de cadastro ao servidor
         socketClient.send(bytes('2 ' + name + ' ' + rg + ' ' + password, 'utf-8'))
 
         # Recebendo status de cadastro do servidor
         resp = socketClient.recv(BUFFER_SIZE)
-
         if not resp:
-            raise
+            raise SocketError
 
+        # Validando registro do usuário
         code = int.from_bytes(resp, byteorder="big")
         if not handleRegister(code):
             try_again = input('Deseja tentar novamente? (y/n) ')
-
             if try_again.lower() == 'y':
                 continue
             else:
@@ -178,86 +189,103 @@ def register():
             break
 
 
-# todo
+''' Formulário de login do usuário, em seguida gerencia a interação dele com as operações bancárias'''
 def login():
     while True:
-        rg = input("Digite o RG: ")
-        password = input("Digite a senha: ")
+        rg = input('Digite o RG: ')
+        password = input('Digite a senha: ')
 
         # Enviando dados de login ao servidor
         socketClient.send(bytes('1 ' + rg + ' ' + password, 'utf-8'))
 
         # Recebendo status de login do servidor
-        resp = socketClient.recv(BUFFER_SIZE)  # RECEIVE DATA FROM SERVER
-
+        resp = socketClient.recv(BUFFER_SIZE)
         if not resp:
-            raise
+            raise SocketError
 
+        # Autentificando login do usuário
         code = int.from_bytes(resp, byteorder="big")
         if not handleAuth(code):
             try_again = input('Deseja tentar novamente? (y/n) ')
-            if try_again == 'y':
+            if try_again.lower() == 'y':
                 continue
             else:
                 return
         else:
             break
 
-    # todo
+    # Criando/inicializando thread do cliente
     socketClient.setblocking(False)
     recv = RecvThread()
     recv.start()
 
+    # Disponibilizando a interação do usuário com o menu de operações
     while True:
         showOperations()
-        option = input("Digite o número de uma operação: ")
+        option = input('Digite o número de uma operação: ')
 
-        # Operação de exibir saldo
+        # Operação de saldo
         if option == '0':
-            socketClient.send(bytes(" ".join([option, rg]), 'utf-8'))
+
+            # Enviando requisição de "saldo" ao servidor
+            socketClient.send(bytes(' '.join([option, rg]), 'utf-8'))
             # resp = socketClient.recv(BUFFER_SIZE)
 
+            # Aguardando resposta do servidor
             recv.waiting_response = True
             while recv.waiting_response:
                 pass
 
         # Operação de saque
         elif option == '1':
-            value = input("Digite o valor a ser sacado: ")
-            socketClient.send(bytes(" ".join([option, rg, value]), 'utf-8'))
+            value = input('Digite o valor a ser sacado: ')
+
+            # Enviando requisição de "saque" ao servidor
+            socketClient.send(bytes(' '.join([option, rg, value]), 'utf-8'))
             # resp = socketClient.recv(BUFFER_SIZE)
 
+            # Aguardando resposta do servidor
             recv.waiting_response = True
             while recv.waiting_response:
                 pass
 
         # Operação de depósito
         elif option == '2':
-            value = input("Digite o valor a ser depositado: ")
+            value = input('Digite o valor a ser depositado: ')
+
+            # Enviando requisição de "depósito" ao servidor
             socketClient.send(bytes(" ".join([option, rg, value]), 'utf-8'))
             # resp = socketClient.recv(BUFFER_SIZE)
 
+            # Aguardando resposta do servidor
             recv.waiting_response = True
             while recv.waiting_response:
                 pass
 
         # Operação de transferência
         elif option == '3':
-            dest = input("Digite o RG do titular da conta destino: ")
-            value = input("Digite o valor da transferência: ")
-            socketClient.send(bytes(" ".join([option, rg, value, dest]), 'utf-8'))
+            dest = input('Digite o RG do titular da conta destino: ')
+            value = input('Digite o valor da transferência: ')
+
+            # Enviando requisição de "transferência" ao servidor
+            socketClient.send(bytes(' '.join([option, rg, value, dest]), 'utf-8'))
             # resp = socketClient.recv(BUFFER_SIZE)
 
+            # Aguardando resposta do servidor
             recv.waiting_response = True
             while recv.waiting_response:
                 pass
 
-        # Operacao de logout
+        # Operação de logout
         elif option == '4':
+
+            # Enviando requisição de "transferência" ao servidor
             socketClient.send(bytes(option, 'utf-8'))
-            print('\nLogout feito com sucesso!\n')
+
+            print(f'\n{TAB}Logout feito com sucesso!{TAB}\n')
             break
 
+        # Sinaliza servidor do estado do cliente
         elif data == 'save':
             recv.recvMark()
             recv.waiting_response = True
@@ -265,25 +293,25 @@ def login():
                 pass
 
         else:
-            print('\nOperação inválida.\n')
+            print(f'\n{TAB}Operação inválida.{TAB}\n')
 
 
-# Iniciando sockets
+''' -------------------------------------------------------- 
+Iniciando sockets e iniciando conexão com servidor '''
 try:
     socketClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     socketClient.connect((HOST, PORT))
 except:
-    print('Erro ao conectar ao servidor.')
-    exit(0)
+    raise SocketError
 
 
-# Iniciando login
+''' --------------------------------------------------------
+Home do sistema bancário '''
 data = ''
 try:
     while True:
         showMenu()
         option = input("Digite a opção desejada: ")
-
         if option == '1':
             login()
         elif option == '2':
@@ -293,10 +321,11 @@ try:
         else:
             print('Opção inválida.')
 except:
-    raise 'Algum erro ocorreu na comunicação com o servidor.'
+    raise SocketError
 
 
-# Encerrando a conexão com o servidor
+''' --------------------------------------------------------
+Encerrando a conexão com o servidor e fechando socket '''
 socketClient.send(bytes('3', 'utf-8'))
 socketClient.close()
 print('\nAté logo!')

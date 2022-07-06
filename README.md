@@ -7,10 +7,10 @@ Trabalho da disciplina MATA88: Fundamentos de Sistemas Distribuídos - 2022.1
 * Robson Sousa
 * Vinicius Brito
 
-___
 ### Descrição
 Trabalho de Sistemas Distribuídos - Simulação de um sistema bancário que utiliza modelo cliente-servidor com multithreading.
+___
 
 ### Executando
   
-### Opções no Cliente
+### Funcionalidades
