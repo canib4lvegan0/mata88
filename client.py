@@ -6,23 +6,23 @@ from threading import Thread
 TAB = ' -' * 5 + ' '
 STATE_TAB = ' .. ' * 5 + ' '
 
-# Configurando sockets
+''' Configurações iniciais do socket '''
 HOST = socket.gethostname()
 PORT = 5002
 BUFFER_SIZE = 2048
 
-# Relógio lógico do cliente
+''' Relógio lógico local '''
 LOGIC_CLOCK = 0
 
+
+# Classe de erro com sockets
 class SocketError(BaseException):
     def __str__(self):
         return 'SocketError: algum error acorreu na conexão com servidor'
 
 
-SOCKET_ERROR = SocketError
-
 ''' Classe que representa uma Thread do cliente.
-Mantem a Thread em atividade, atualiza estado, enviar e recebe requisição do servidor. '''
+Mantém a Thread em atividade, atualiza estado, enviar e recebe requisição do servidor. '''
 class RecvThread(Thread):
 
     def __init__(self):
@@ -32,7 +32,7 @@ class RecvThread(Thread):
         self.messages = []
         self.last_message = 'WAITING COMMAND'
 
-    ''' Mantém a thread em atividade enquanto o cliente estiver ativo '''
+    ''' Mantém a thread em execução enquanto o cliente estiver ativo '''
     def run(self):
         global LOGIC_CLOCK
 
@@ -44,7 +44,7 @@ class RecvThread(Thread):
                 # Captura valor do relógio lógico do Servidor e atualizando o local
                 if resp:
                     LOGIC_CLOCK = resp.pop()
-                    print(f'\n{STATE_TAB}Estado do relógio lógico: {LOGIC_CLOCK}{STATE_TAB}\n')
+                    print(f'\n{STATE_TAB}Estado do relógio lógico local: {LOGIC_CLOCK}{STATE_TAB}\n')
 
                 if resp[0] != "save":           # Finaliza a comunicação/operação corrente
                     self.last_message = data
@@ -68,7 +68,7 @@ class RecvThread(Thread):
             except:
                 pass
 
-    ''' Atualiza estado da Thread '''
+    ''' Reseta estado da Thread '''
     def resetState(self):
         time.sleep(10)
         self.saved_state = False
@@ -89,8 +89,8 @@ class RecvThread(Thread):
     def recvMark(self):
         if not self.saved_state:
             self.sendMark()
-        # else:
-        #     print(f'\nMensagens no Canal: {self.messages}')
+        else:
+            print(f'\n{STATE_TAB}Mensagens no Canal: {self.messages}{STATE_TAB}\n')
 
 
 ''' Manipula o cadastro de um usuário '''
@@ -219,7 +219,7 @@ def login():
     recv = RecvThread()
     recv.start()
 
-    # Disponibilizando a interação do usuário com o menu de operações
+    # Disponibilizando a interação do correntista com o menu de operações
     while True:
         showOperations()
         option = input('Digite o número de uma operação: ')

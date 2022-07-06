@@ -33,7 +33,7 @@ class DB:
 
     ''' Autentifica login do correntista '''
     @staticmethod
-    def login(_rg, _pass): # LOGIN A CLIENT
+    def login(_rg, _pass):
         file = DB.openFile()
 
         with file:
@@ -163,10 +163,8 @@ class DB:
 
     ''' Transfere dinheiro de um correntista para outro '''
     @staticmethod
-    def transfer(_rg_source, value, _rg_dest): # DEPOSIT MONEY FROM A CLIENT TO ANOTHER CLIENT
-
-        # Verifica se o correntista destinatário existe
-        if DB.checkClient(_rg_dest) == 0:
+    def transfer(_rg_source, value, _rg_dest):
+        if DB.checkClient(_rg_dest) == 0:               # Verifica se o correntista destinatário existe
             if DB.withdraw(_rg_source, value) == 0:     # Faz um saque no valor solicitado da conta de origem
                 if DB.deposit(_rg_dest, value) == 0:    # Faz um depósito no valor solicitado na conta de destino
                     print(f'\n{TAB}Transferência efetuada.{TAB}\n')
