@@ -17,8 +17,8 @@ PORT = 5002
 BUFFER_SIZE = 2048      # Definindo buffer de dados
 threads = 0             # Contator de threads
 LIST_CLIENTS = []       # Lista de clientes
-LOCKS = dict()          # todo o que é locks?
-saved_state = False     # todo o que é saved_state?
+LOCKS = dict()
+saved_state = False
 
 
 ''' Relógio lógico do servidor '''
@@ -26,7 +26,6 @@ LOGIC_CLOCK = 0
 
 
 ''' Classe que representa uma Thread de um novo cliente conectado.'''
-# todo Mantém a Thread em atividade, atualiza estado, enviar e recebe requisição do servidor.
 class ClientThread(Thread):
 
     def __init__(self, _id, ip, _port, connection):
@@ -39,7 +38,7 @@ class ClientThread(Thread):
         self.messages = []
         self.last_message = ''
 
-        print(f'\n{TAB}Thread Cliente " + str(_id) + " criada.{TAB}\n')
+        print(f'\n{TAB}Thread Cliente {str(_id)} criada.{TAB}\n')
 
     ''' Reseta estado da Thread '''
     def resetState(self):
@@ -48,7 +47,7 @@ class ClientThread(Thread):
         time.sleep(10)
         saved_state = False
 
-    ''' Enviar requisição do servidor aos clientes '''
+    ''' Envia requisição do servidor aos clientes '''
     def sendMark(self):
         for conn in LIST_CLIENTS:
             # conn.send(bytes('save', 'utf-8'))
@@ -60,7 +59,7 @@ class ClientThread(Thread):
         reset = threading.Thread(target=self.resetState)
         reset.start()
 
-    # todo aqui
+    ''' Bloqueia a thread do cliente em operação '''
     def lock_threads(self, rgs):
         for rg in rgs:
             if not (rg in LOCKS):
@@ -70,7 +69,7 @@ class ClientThread(Thread):
             print('Bloqueando RG', rg)
         time.sleep(2)
 
-    # todo aqui
+    ''' Libera a thread do cliente em operação '''
     def release_threads(self, rgs):
         for rg in rgs:
             print('Liberando RG', rg)
@@ -144,11 +143,11 @@ class ClientThread(Thread):
                 # Operação de saldo
                 if data[0] == '0':
                     self.lock_threads([data[1]])        # Bloqueia correntista para movimentações
-                    res = DB.queryCash(data[1])         # Busca saldo do correntista
+                    res = DB.query_cash(data[1])         # Busca saldo do correntista
                     self.release_threads([data[1]])     # Desbloqueia correntista para movimentações
 
                     # Enviando resposta ao cliente
-                    self.connection.send(bytes(' '.join(['QUERY', str(res), str(LOGIC_CLOCK)]), 'utf-8'))
+                    self.connection.send(bytes(' '.join(['QUERY', str(res), str(LOGIC_CLOCK +1)]), 'utf-8'))
 
                 # Operação de saque
                 elif data[0] == '1':

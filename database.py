@@ -7,15 +7,15 @@ class DB:
 
     ''' Abre arquivo de db '''
     @staticmethod
-    def openFile():
+    def open_file():
         f = open('db.txt', 'a')
         f.close()
         return open('db.txt', 'r+')
 
     ''' Verifica se o correntista existe '''
     @staticmethod
-    def checkClient(_rg):
-        file = DB.openFile()
+    def check_client(_rg):
+        file = DB.open_file()
 
         with file:
             line = file.readline()
@@ -34,7 +34,7 @@ class DB:
     ''' Autentifica login do correntista '''
     @staticmethod
     def login(_rg, _pass):
-        file = DB.openFile()
+        file = DB.open_file()
 
         with file:
             line = file.readline()
@@ -64,10 +64,10 @@ class DB:
     ''' Registra um correntista '''
     @staticmethod
     def register(name, rg, pwd):
-        file = DB.openFile()
+        file = DB.open_file()
 
         file.seek(0, 2)
-        if DB.checkClient(rg) == 0:
+        if DB.check_client(rg) == 0:
             print(f'\n{TAB}RG já cadastrado.{TAB}\n')
             return 1
 
@@ -83,15 +83,15 @@ class DB:
 
     ''' Busca pelo saldo co correntista '''
     @staticmethod
-    def queryCash(_rg):
-        file = DB.openFile()
-        cash = DB.getCash(file, _rg)
+    def query_cash(_rg):
+        file = DB.open_file()
+        cash = DB.get_cash(file, _rg)
         file.close()
         return cash
 
     ''' Captura saldo do correntista '''
     @staticmethod
-    def getCash(file, _rg):
+    def get_cash(file, _rg):
         for line in file:
             [_, rg, _, cash] = line.split('|')
             if rg == _rg:
@@ -102,9 +102,9 @@ class DB:
     ''' Saca dinheiro de um correntista '''
     @staticmethod
     def withdraw(_rg, value):
-        file = DB.openFile()
+        file = DB.open_file()
 
-        cash = DB.getCash(file, _rg)
+        cash = DB.get_cash(file, _rg)
 
         # Não realiza a operação de saque se o saldo for menor que o valor a solicitado
         if cash < value:
@@ -136,9 +136,9 @@ class DB:
     ''' Deposita dinheiro para um correntista '''
     @staticmethod
     def deposit(_rg, value):
-        file = DB.openFile()
+        file = DB.open_file()
 
-        cash = DB.getCash(file, _rg)
+        cash = DB.get_cash(file, _rg)
 
         # Atualizando saldo após saque
         cash += value
@@ -164,7 +164,7 @@ class DB:
     ''' Transfere dinheiro de um correntista para outro '''
     @staticmethod
     def transfer(_rg_source, value, _rg_dest):
-        if DB.checkClient(_rg_dest) == 0:               # Verifica se o correntista destinatário existe
+        if DB.check_client(_rg_dest) == 0:               # Verifica se o correntista destinatário existe
             if DB.withdraw(_rg_source, value) == 0:     # Faz um saque no valor solicitado da conta de origem
                 if DB.deposit(_rg_dest, value) == 0:    # Faz um depósito no valor solicitado na conta de destino
                     print(f'\n{TAB}Transferência efetuada.{TAB}\n')
